@@ -4,9 +4,10 @@ import os
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.layers import Dropout, Dense, Flatten
 from tensorflow.keras.models import Sequential, model_from_json
+from tensorflow.keras.utils import to_categorical
 import tempfile
 
-from utils import PlotLosses
+from utils import PlotLosses, ConfusionMatrixPlotter
 
 def add_l1l2_regularizer(model, l1=0.0, l2=0.0, reg_attributes=None):
     if not reg_attributes:
@@ -83,7 +84,7 @@ updated_model.add(Dropout(0.85))
 updated_model.add(Dense(1, activation='sigmoid'))
 model = updated_model
 
-model = add_l1l2_regularizer(model, l2=0.00001, reg_attributes='kernel_regularizer')
+#model = add_l1l2_regularizer(model, l2=0.00001, reg_attributes='kernel_regularizer')
 
 model.compile(
     optimizer=tf.keras.optimizers.Adam(lr=0.0001),
@@ -95,7 +96,20 @@ model.compile(
 
 train_steps = train_flow.n // train_flow.batch_size
 valid_steps = test_flow.n // test_flow.batch_size
+
 plot_losses = PlotLosses()
+
+cm_flow = test_datagen.flow_from_directory(
+    directory=os.path.join(data_folder, "test"),
+    target_size=(input_shape[0], input_shape[1]),
+    color_mode="grayscale",
+    batch_size=1,
+    class_mode="binary",
+    shuffle=False,
+)
+x, y = zip(*(cm_flow[i] for i in range(0, len(cm_flow), 2)))
+x_val, y_val = np.vstack(x), np.vstack(to_categorical(y))[:,1]
+plot_cm = ConfusionMatrixPlotter(x_val, y_val, normalize=True)
 
 history = model.fit_generator(
     train_flow,
@@ -103,8 +117,11 @@ history = model.fit_generator(
     epochs=100,
     validation_data=test_flow,
     validation_steps=valid_steps,
-    callbacks=[plot_losses],
-    verbose=1,
+    callbacks=[
+        plot_losses,
+        plot_cm,
+    ],
+    verbose=2,
     max_queue_size=250,
     workers=32,
 )
