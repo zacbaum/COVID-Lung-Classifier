@@ -8,8 +8,7 @@ from tensorflow.keras.utils import to_categorical
 from matplotlib import pyplot as plt
 import tempfile
 
-from utils import PlotLosses, ConfusionMatrixPlotter, plotImages, add_l1l2_regularizer
-
+from utils import PlotLosses, ConfusionMatrixPlotter, plotImages
 
 batch_size = 233  # 17242 / 74
 
@@ -33,8 +32,8 @@ train_flow = train_datagen.flow_from_directory(
     class_mode="binary",
     shuffle=True,
 )
-sample_train_images, sample_train_labels = next(train_flow)
-plotImages(np.squeeze(sample_train_images), sample_train_labels)
+#sample_train_images, sample_train_labels = next(train_flow)
+#plotImages(np.squeeze(sample_train_images), sample_train_labels)
 
 test_datagen = ImageDataGenerator(
     zoom_range=[0.75, 0.75],
@@ -45,10 +44,10 @@ test_flow = test_datagen.flow_from_directory(
     color_mode="grayscale",
     batch_size=225,  # 9450 / 42
     class_mode="binary",
-    shuffle=False,
+    shuffle=True,
 )
-sample_test_images, sample_test_labels = next(test_flow)
-plotImages(np.squeeze(sample_test_images), sample_test_labels, "test_sample")
+#sample_test_images, sample_test_labels = next(test_flow)
+#plotImages(np.squeeze(sample_test_images), sample_test_labels, "test_sample")
 
 model = tf.keras.applications.VGG16(
     include_top=False, weights=None, input_shape=input_shape, classes=2
@@ -62,7 +61,6 @@ updated_model.add(Dense(512, activation="relu"))
 updated_model.add(Dropout(0.5))
 updated_model.add(Dense(1, activation="sigmoid"))
 model = updated_model
-#model = add_l1l2_regularizer(model, l2=0.00001, reg_attributes='kernel_regularizer')
 model.compile(
     optimizer=tf.keras.optimizers.Adam(lr=0.0001),
     loss="binary_crossentropy",
@@ -87,7 +85,7 @@ plot_losses = PlotLosses()
 history = model.fit_generator(
     train_flow,
     train_flow.n // train_flow.batch_size,
-    epochs=100,
+    epochs=50,
     validation_data=test_flow,
     validation_steps=test_flow.n // test_flow.batch_size,
     callbacks=[
