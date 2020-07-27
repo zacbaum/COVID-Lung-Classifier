@@ -36,20 +36,19 @@ x_val, y_val = np.vstack(x), np.vstack(to_categorical(y))[:, 1]
 
 model = load_model(fold + ".h5")
 
-preds = model.predict(
-    x_val,
-    batch_size=256,
-    max_queue_size=250, 
-    workers=32,
-    verbose=1,
-)
+preds = model.predict(x_val, batch_size=256, max_queue_size=250, workers=32, verbose=1,)
 preds = np.round(np.squeeze(preds))
 
-if fold == "fold1": layer_idx = utils.find_layer_idx(model, "dense_1")
-if fold == "fold2": layer_idx = utils.find_layer_idx(model, "dense_3")
-if fold == "fold3": layer_idx = utils.find_layer_idx(model, "dense_5")
-if fold == "fold4": layer_idx = utils.find_layer_idx(model, "dense_7")
-if fold == "fold5": layer_idx = utils.find_layer_idx(model, "dense_9")
+if fold == "fold1":
+    layer_idx = utils.find_layer_idx(model, "dense_1")
+if fold == "fold2":
+    layer_idx = utils.find_layer_idx(model, "dense_3")
+if fold == "fold3":
+    layer_idx = utils.find_layer_idx(model, "dense_5")
+if fold == "fold4":
+    layer_idx = utils.find_layer_idx(model, "dense_7")
+if fold == "fold5":
+    layer_idx = utils.find_layer_idx(model, "dense_9")
 model.layers[layer_idx].activation = activations.linear
 model_path = os.path.join(
     tempfile.gettempdir(), next(tempfile._get_candidate_names()) + ".h5"

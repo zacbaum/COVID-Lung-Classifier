@@ -134,10 +134,12 @@ def plotAttention(model, layer_idx, im, im_idx, label, fold, output_folder_path)
         backprop_modifier="guided",
     )
     jet_heatmap = np.uint8(cm.jet(grads)[..., :3] * 255)
-    jet_heatmap = cv2.cvtColor(jet_heatmap, cv2.COLOR_BGR2RGB)            
+    jet_heatmap = cv2.cvtColor(jet_heatmap, cv2.COLOR_BGR2RGB)
     cv2.imwrite(
-        os.path.join(output_folder_path, label + "-" + fold + "-sm-" + str(im_idx) + ".png"), 
-        jet_heatmap
+        os.path.join(
+            output_folder_path, label + "-" + fold + "-sm-" + str(im_idx) + ".png"
+        ),
+        jet_heatmap,
     )
     grads = visualize_cam(
         model,
@@ -150,6 +152,8 @@ def plotAttention(model, layer_idx, im, im_idx, label, fold, output_folder_path)
     jet_heatmap = np.uint8(cm.jet(grads)[..., :3] * 255)
     jet_heatmap = cv2.cvtColor(jet_heatmap, cv2.COLOR_BGR2RGB)
     cv2.imwrite(
-        os.path.join(output_folder_path, label + "-" + fold + "-cam-" + str(im_idx) + ".png"),
-        overlay(jet_heatmap, cv2.cvtColor(im, cv2.COLOR_GRAY2RGB), 0.2)
+        os.path.join(
+            output_folder_path, label + "-" + fold + "-cam-" + str(im_idx) + ".png"
+        ),
+        overlay(jet_heatmap, cv2.cvtColor(im, cv2.COLOR_GRAY2RGB), 0.2),
     )
