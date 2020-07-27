@@ -1,11 +1,16 @@
-import keras
 from keras import backend as K
-import tensorflow as tf
 from matplotlib import pyplot as plt
-import numpy as np
 from sklearn.metrics import confusion_matrix
+from vis.utils import utils
+from vis.visualization import visualize_saliency, overlay, visualize_cam
+import cv2
 import itertools
+import keras
+import matplotlib.cm as cm
+import numpy as np
+import os
 import tempfile
+import tensorflow as tf
 
 
 class PlotLosses(keras.callbacks.Callback):
@@ -118,3 +123,33 @@ def plotImages(images_arr, labels, name="train_sample"):
         ax.axis("off")
     plt.tight_layout()
     plt.savefig(name + ".png")
+
+
+def plotAttention(model, layer_idx, im, im_idx, label, fold, output_folder_path):
+    grads = visualize_saliency(
+        model,
+        layer_idx,
+        filter_indices=None,
+        seed_input=im,
+        backprop_modifier="guided",
+    )
+    jet_heatmap = np.uint8(cm.jet(grads)[..., :3] * 255)
+    jet_heatmap = cv2.cvtColor(jet_heatmap, cv2.COLOR_BGR2RGB)            
+    cv2.imwrite(
+        os.path.join(output_folder_path, label + "-" + fold + "-sm-" + str(im_idx) + ".png"), 
+        jet_heatmap
+    )
+    grads = visualize_cam(
+        model,
+        layer_idx,
+        filter_indices=None,
+        seed_input=im,
+        backprop_modifier="guided",
+        penultimate_layer_idx=utils.find_layer_idx(model, "block5_pool"),
+    )
+    jet_heatmap = np.uint8(cm.jet(grads)[..., :3] * 255)
+    jet_heatmap = cv2.cvtColor(jet_heatmap, cv2.COLOR_BGR2RGB)
+    cv2.imwrite(
+        os.path.join(output_folder_path, label + "-" + fold + "-cam-" + str(im_idx) + ".png"),
+        overlay(jet_heatmap, cv2.cvtColor(im, cv2.COLOR_GRAY2RGB), 0.2)
+    )
