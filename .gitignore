@@ -126,3 +126,6 @@ dmypy.json
 *.h5
 *.png
 *.jpg
+*.txt
+*.out
+*.xlsx
