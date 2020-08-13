@@ -13,7 +13,7 @@ batch_size = 256
 
 input_shape = (int(1080 / 4), int(720 / 4), 1)
 
-data_folder = "/home/zbaum/Baum/COVID-Lung-Classifier/data-qual"
+data_folder = "/home/zbaum/Baum/COVID-Lung-Classifier/data-alocc"
 
 train_datagen = ImageDataGenerator(
     rotation_range=10,
@@ -74,7 +74,7 @@ cm_flow = test_datagen.flow_from_directory(
 )
 x, y = zip(*(cm_flow[i] for i in range(0, len(cm_flow), 1)))
 x_val, y_val = np.vstack(x), np.vstack(to_categorical(y))[:, 1]
-plot_cm = ConfusionMatrixPlotter(x_val, y_val, normalize=False)
+plot_cm = ConfusionMatrixPlotter(x_val, y_val, normalize=True)
 
 history = model.fit_generator(
     train_flow,
@@ -82,11 +82,11 @@ history = model.fit_generator(
     epochs=50,
     validation_data=test_flow,
     validation_steps=test_flow.n // test_flow.batch_size,
-    class_weight={0: 100., 1: 1.},
+    class_weight={0: 50., 1: 1.},
     callbacks=[plot_cm,],
     verbose=2,
     max_queue_size=250,
     workers=32,
 )
 
-model.save("quality-cls-100to1.h5")
+model.save("quality-cls-50to1.h5")
